@@ -1,0 +1,25 @@
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
+import axios from 'axios';
+
+export default function Callback() {
+  const router = useRouter();
+
+  useEffect(() => {
+    async function getToken() {
+      const { code, state } = router.query;
+      if (!code || !state) return;
+
+      try {
+        const res = await axios.post('/api/token', { code, state });
+        localStorage.setItem('spotify_access_token', res.data.access_token);
+        router.push('/');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    getToken();
+  }, [router]);
+
+  return <p>Logging you in…</p>;
+}
