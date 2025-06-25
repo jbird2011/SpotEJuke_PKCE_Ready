@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   const params = new URLSearchParams({
     client_id: process.env.VITE_SPOTIFY_CLIENT_ID,
     response_type: 'code',
-    redirect_uri: `${process.env.VERCEL_URL}/auth/callback`,
+    redirect_uri: process.env.VITE_SPOTIFY_REDIRECT_URI,
     code_challenge_method: 'S256',
     code_challenge,
     state,
