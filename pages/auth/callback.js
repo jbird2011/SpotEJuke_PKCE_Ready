@@ -15,7 +15,7 @@ export default function Callback() {
         localStorage.setItem('spotify_access_token', res.data.access_token);
         router.push('/');
       } catch (err) {
-        console.error(err);
+        console.error('Error getting token:', err);
       }
     }
     getToken();
