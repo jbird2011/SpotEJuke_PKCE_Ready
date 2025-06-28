@@ -2,9 +2,13 @@ import axios from 'axios';
 import cookie from 'cookie';
 
 export default async function handler(req, res) {
+  // 🔐 Add this block to restrict to POST only
+  if (req.method !== 'POST') {
+    return res.status(405).send('Method Not Allowed');
+  }
+
   const cookies = cookie.parse(req.headers.cookie || '');
   const code_verifier = cookies.code_verifier;
-
   const { code } = req.body;
 
   const params = new URLSearchParams({
