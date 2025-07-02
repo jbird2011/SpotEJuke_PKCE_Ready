@@ -1,24 +1,42 @@
+// pages/auth/callback.js
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import axios from 'axios';
 
 export default function Callback() {
   const router = useRouter();
 
   useEffect(() => {
-    async function getToken() {
-      const { code, state } = router.query;
-      if (!code || !state) return;
+    async function handleCallback() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+
+      if (!code) {
+        console.error('No code found in URL');
+        return;
+      }
 
       try {
-        const res = await axios.post('/api/token', { code, state });
-        localStorage.setItem('spotify_access_token', res.data.access_token);
+        const response = await fetch('/api/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ code }),
+        });
+
+        if (!response.ok) throw new Error('Failed to exchange code for tokens');
+
+        const data = await response.json();
+        console.log('✅ Tokens:', data);
+
+        // Redirect or do something with the token
         router.push('/');
       } catch (err) {
-        console.error('Error getting token:', err);
+        console.error('❌ Callback error:', err.message);
       }
     }
-    getToken();
+
+    handleCallback();
   }, [router]);
 
   return <p>Logging you in…</p>;
