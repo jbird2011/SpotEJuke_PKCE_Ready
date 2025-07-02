@@ -39,5 +39,5 @@ export default function Callback() {
     handleCallback();
   }, [router]);
 
-  return <p>Logging you in…</p>;
-}
+  return <p>Logging you in…</p>; 
+}# Adds a blank line
