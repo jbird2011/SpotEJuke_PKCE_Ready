@@ -5,9 +5,7 @@ export default async function handler(req, res) {
   }
 
   const { code } = req.body;
-  if (!code) {
-    return res.status(400).json({ error: 'Missing code' });
-  }
+  if (!code) return res.status(400).json({ error: 'Missing code' });
 
   const cookie = require('cookie');
   const cookies = cookie.parse(req.headers.cookie || '');
@@ -34,33 +32,27 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
+    console.log('🎧 Spotify Token Response:', data);
 
-    // 🔍 Log the raw token response
-    console.log('🎯 Spotify token response:', data);
-
-    // 🚨 Check for missing token
     if (!data.access_token) {
-      return res.status(400).json({
-        error: 'No access token returned from Spotify',
-        details: data,
-      });
+      return res.status(400).json({ error: 'Failed to get access_token', raw: data });
     }
 
-    // ✅ Set secure cookie with access token
-    res.setHeader(
-      'Set-Cookie',
-      cookie.serialize('access_token', data.access_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: data.expires_in,
-        path: '/',
-        sameSite: 'Lax',
-      })
-    );
+    // Set access token as secure cookie
+    res.setHeader('Set-Cookie', cookie.serialize('access_token', data.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: data.expires_in,
+      path: '/',
+      sameSite: 'Lax',
+    }));
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({
+      access_token: data.access_token,
+      expires_in: data.expires_in,
+    });
   } catch (error) {
-    console.error('Token exchange error:', error);
+    console.error('🚨 Token exchange error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 }
