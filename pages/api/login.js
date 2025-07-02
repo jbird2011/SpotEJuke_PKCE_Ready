@@ -9,7 +9,11 @@ export default async function handler(req, res) {
   const code_challenge = await generateCodeChallenge(code_verifier);
   const state = Math.random().toString(36).substring(2, 15);
 
-  res.setHeader('Set-Cookie', `code_verifier=${code_verifier}; Path=/; HttpOnly; SameSite=Lax`);
+  // Store the code_verifier securely in a cookie
+  res.setHeader(
+    'Set-Cookie',
+    `code_verifier=${code_verifier}; Path=/; HttpOnly; SameSite=Lax`
+  );
 
   const params = new URLSearchParams({
     client_id: process.env.SPOTIFY_CLIENT_ID,
@@ -21,6 +25,12 @@ export default async function handler(req, res) {
     scope: 'user-read-private user-read-email'
   });
 
-  console.log("🔗 FINAL URL:", `https://accounts.spotify.com/authorize?${params.toString()}`);
-  res.redirect(`https://accounts.spotify.com/authorize?${params.toString()}`);
+  // One-time DEBUG line to confirm final redirect value:
+  console.log('🧪 DEBUG: Redirect URI param value:', params.get('redirect_uri'));
+
+  // Final authorization URL
+  const spotifyAuthUrl = `https://accounts.spotify.com/authorize?${params.toString()}`;
+  console.log('🔗 FINAL SPOTIFY URL:', spotifyAuthUrl);
+
+  res.redirect(spotifyAuthUrl);
 }
