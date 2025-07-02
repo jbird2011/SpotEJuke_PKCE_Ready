@@ -31,6 +31,7 @@ export default async function handler(req, res) {
   // Final authorization URL
   const spotifyAuthUrl = `https://accounts.spotify.com/authorize?${params.toString()}`;
   console.log('🔗 FINAL SPOTIFY URL:', spotifyAuthUrl);
+ 
 
   res.redirect(spotifyAuthUrl);
 }
