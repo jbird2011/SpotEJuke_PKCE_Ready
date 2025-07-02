@@ -40,4 +40,4 @@ export default function Callback() {
   }, [router]);
 
   return <p>Logging you in…</p>; 
-}# Adds a blank line
+}
