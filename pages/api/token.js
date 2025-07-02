@@ -5,7 +5,6 @@ export default async function handler(req, res) {
   }
 
   const { code } = req.body;
-
   if (!code) {
     return res.status(400).json({ error: 'Missing code' });
   }
@@ -26,27 +25,42 @@ export default async function handler(req, res) {
   params.append('code_verifier', code_verifier);
 
   try {
-  const response = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: params.toString(),
-  });
+    const response = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
+    });
 
-  const data = await response.json();
+    const data = await response.json();
 
-  // Set access token cookie
-  res.setHeader('Set-Cookie', cookie.serialize('access_token', data.access_token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: data.expires_in,
-    path: '/',
-  }));
+    // 🔍 Log the raw token response
+    console.log('🎯 Spotify token response:', data);
 
-  return res.status(200).json({ success: true });
-} catch (error) {
-  console.error('Token exchange error:', error);
-  return res.status(500).json({ error: 'Internal Server Error' });
-}
+    // 🚨 Check for missing token
+    if (!data.access_token) {
+      return res.status(400).json({
+        error: 'No access token returned from Spotify',
+        details: data,
+      });
+    }
+
+    // ✅ Set secure cookie with access token
+    res.setHeader(
+      'Set-Cookie',
+      cookie.serialize('access_token', data.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: data.expires_in,
+        path: '/',
+        sameSite: 'Lax',
+      })
+    );
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Token exchange error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
 }
