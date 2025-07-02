@@ -1,3 +1,4 @@
+// pages/api/token.js
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -34,8 +35,9 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    res.status(200).json(data);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch token' });
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error('Token exchange error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 }
