@@ -26,18 +26,27 @@ export default async function handler(req, res) {
   params.append('code_verifier', code_verifier);
 
   try {
-    const response = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: params.toString(),
-    });
+  const response = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params.toString(),
+  });
 
-    const data = await response.json();
-    return res.status(200).json(data);
-  } catch (error) {
-    console.error('Token exchange error:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
-  }
+  const data = await response.json();
+
+  // Set access token cookie
+  res.setHeader('Set-Cookie', cookie.serialize('access_token', data.access_token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: data.expires_in,
+    path: '/',
+  }));
+
+  return res.status(200).json({ success: true });
+} catch (error) {
+  console.error('Token exchange error:', error);
+  return res.status(500).json({ error: 'Internal Server Error' });
+}
 }
